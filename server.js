@@ -28,16 +28,7 @@ app.get("/api/connect", (req, res) => {
   // Handle the API logic here
   res.json({ message: "Backend responded successfully!" });
 });
-// Define a route handler for retrieving all items from the database
-app.get("/api/dbItems", (req, res) => {
-  dbContent.find({}, (err, items) => {
-    if (err) {
-      res.status(500).json({ error: "Database error" });
-    } else {
-      res.json(items);
-    }
-  });
-});
+
 // Define a route handler for posting new items to the database
 app.post("/api/dbItems", (req, res) => {
   const newItem = req.body; // Assuming the request body contains the new item data
@@ -47,6 +38,36 @@ app.post("/api/dbItems", (req, res) => {
       res.status(500).json({ error: "Database error" });
     } else {
       res.json(insertedItem); // Return the inserted item as a response
+    }
+  });
+});
+
+// Define a route to get all items from the database
+app.get("/api/dbItems", (req, res) => {
+  // Assuming you're using NeDB, you can retrieve all items like this:
+  dbContent.find({}, (err, items) => {
+    if (err) {
+      console.error("Error fetching items:", err);
+      res.status(500).json({ error: "Error fetching items" });
+    } else {
+      // Construct an array from the individual items
+      const itemArray = Object.values(items);
+      res.json(itemArray);
+    }
+  });
+});
+
+app.delete("/api/dbItems/:itemId", (req, res) => {
+  const itemId = req.params.itemId;
+
+  // Assuming you're using NeDB, you can delete the item like this
+  dbContent.remove({ _id: itemId }, (err, numRemoved) => {
+    if (err) {
+      res.status(500).json({ error: "Error deleting item" });
+    } else if (numRemoved === 0) {
+      res.status(404).json({ error: "Item not found" });
+    } else {
+      res.json({ message: `Item with ID ${itemId} has been deleted.` });
     }
   });
 });
